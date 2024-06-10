@@ -4,19 +4,12 @@ a simple inference server for llama cpp python, based on prompt configurations a
 
 ## installation
 
-first, download a suitable torch version for your system. Any >2 version should suffice.
-
-CPU:
-`pip install torch --index-url https://download.pytorch.org/whl/cpu`
-
-CUDA:
-`pip install torch`
-
 ```bash
+# installs llama-cpp-python
+make install-cuda  # (install-m1) llama-cpp-python
+make install 
 # downloads the necessary models/tokenizers and llm (.gguf) to the models directory
 make download
-# installs llama-cpp-python
-make install  # /install-cuda/install-m1
 # runs the server on port 8000
 make
 ```
@@ -28,6 +21,8 @@ python3 -m llama_cpp.server --model models/llm.gguf --n_gpu_layers=-1 --chat_for
 ```
 
 ## usage
+
+after running the server (see above), you can use the api as follows:
 
 ```python
 from llm_config import prompt_configs
