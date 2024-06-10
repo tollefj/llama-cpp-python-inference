@@ -5,14 +5,18 @@ from copy import deepcopy
 from pathlib import Path
 from typing import List
 
+import nltk
 from huggingface_hub import snapshot_download
 from huggingface_hub.file_download import repo_folder_name
 
-from util_env import init_dotenv
+from utils.util_env import init_dotenv
 
 llm_tokenizer = os.getenv("LLM_TOKENIZER")
 # this will only download config files + tokenizer for the selected models
 ignore_patterns = ["*.msgpack", "*.safetensors", "*.onnx", "onnx/*", "*.h5"]
+
+# download nltk sentence tokenizer:
+nltk.download("punkt")
 
 
 # modified from

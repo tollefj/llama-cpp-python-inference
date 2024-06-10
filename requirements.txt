@@ -1,5 +1,7 @@
-torch
+torch<=2.3.0
 python-dotenv
 jsonlines
 transformers
+nltk
+num2words
 # llama-cpp-python[server]

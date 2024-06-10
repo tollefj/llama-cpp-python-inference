@@ -5,14 +5,24 @@ a simple inference server for llama cpp python, based on prompt configurations a
 ## installation
 
 ```bash
-# installs llama-cpp-python
-make install-cuda  # (install-m1) llama-cpp-python
+# install llama-cpp-python
+# CUDA?
+CMAKE_ARGS="-DLLAMA_CUDA=on" FORCE_CMAKE=1 pip install 'llama-cpp-python[server]'
+# Apple M?
+CMAKE_ARGS="-DLLAMA_METAL=on" pip install -U "llama-cpp-python[server]" --no-cache-dir
+
+# regular dependencies
+# + downloads the necessary models/tokenizers and llm (.gguf) to the models directory
 make install 
-# downloads the necessary models/tokenizers and llm (.gguf) to the models directory
 make download
+
 # runs the server on port 8000
 make
 ```
+
+to use any LLM of your choice, download the model and place it as `llm.gguf` in the `/models` directory.
+
+- make sure to place the huggingface model id as the `LLM_TOKENIZER` environment variable in the `.env` file.
 
 any issues? run the equivalent command:
 
@@ -25,28 +35,48 @@ python3 -m llama_cpp.server --model models/llm.gguf --n_gpu_layers=-1 --chat_for
 after running the server (see above), you can use the api as follows:
 
 ```python
-from llm_config import prompt_configs
-from llm import generate
+from llm import LLM
 
-# see `llm_config.py` for configurations
-config = prompt_configs["question_and_reason"]
+llm = LLM(root_dir="../")
 
-query = "this is a question about something related to the documents the LLM will receive"
-data = [
-    "doc 1: this is the first document",
-    "doc 2: this is the second document",
-    "doc 3: this is the third document",
-    "doc 4: this is the fourth document",
-]
-data = "\n".join(data)
+# text = ...  # e.g., wikipedia on CNNs
+query = "how are CNNs used for BCIs?"
+# do not use f-strings. config is formatted pre-instruction
+config = {
+    "prompt": "You are given a document:\n{text}\nBased on its content, create three questions related to the following query: '{query}'. Answer in JSON according to the schema, where each question should receive a concise answer",
+    "schema": {
+        "topic": {"type": "string"},
+        "questions": {
+            "type": "array",
+            "properties": {
+                "question": {"type": "string"},
+                "answer": {"type": "string"},
+            },
+        },
+    }
+}
 
-generate(
+NEW_TOKENS = 1000
+res = llm.generate(
     query=query,
-    text=data,
-    prompt=config["prompt"],
-    schema=config["schema"],
-    schema_type="object",  # array/object, ...
+    text=text,
+    temp=0.3,
+    tokens=NEW_TOKENS,
+    config=config,
+    schema_type="object",  # array/object/number etc
 )
+res["questions"]
+```
+
+Output:
+
+```json
+[{'question': 'What is the role of convolutional neural networks (CNNs) in brain-computer interfaces (BCIs)?',
+  'answer': 'CNNs are used for feature extraction and pattern recognition in BCIs, allowing them to detect and classify various brain signals and improve the accuracy of signal processing.'},
+ {'question': 'How do CNNs help prevent overfitting in BCIs?',
+  'answer': 'CNNs use regularization techniques such as weight decay and trimmed connectivity (e.g., dropout) to prevent overfitting in BCIs, ensuring that the network learns generalized principles rather than dataset-specific biases.'},
+ {'question': 'What are some advantages of using CNNs for BCIs compared to traditional algorithms?',
+  'answer': 'CNNs offer independence from prior knowledge and human intervention in feature extraction, as well as reduced pre-processing requirements, making them a more efficient and effective approach for BCIs.'}]
 ```
 
 ## environment variables
@@ -58,4 +88,14 @@ this is to support offline hosting, controlling the storage location of all mode
 from util_env import init_dotenv
 init_dotenv(custom_environments=".your-env-file")
 # your program
+```
+
+## nifty things
+
+numerical to human-readable:
+
+```python
+from num2words import num2words
+num_words = num2words(2384)
+suffix = f"Attempt to generate less than {num_words} words" 
 ```
