@@ -32,12 +32,18 @@ python3 -m llama_cpp.server --model models/llm.gguf --n_gpu_layers=-1 --chat_for
 
 ## usage
 
-after running the server (see above), you can use the api as follows:
+after running the server (see above), you can use the api from `llm.py`.
+
+everything is contained in this file, so this can easily be copied and modified to your other projects.
 
 ```python
 from llm import LLM
+from transformers import AutoTokenizer
+import os
 
-llm = LLM(root_dir="../")
+tokenizer = AutoTokenizer.from_pretrained(os.getenv("LLM_TOKENIZER_OUTPUT"))
+
+llm = LLM(tokenizer)
 
 # text = ...  # e.g., wikipedia on CNNs
 query = "how are CNNs used for BCIs?"
@@ -45,7 +51,6 @@ query = "how are CNNs used for BCIs?"
 config = {
     "prompt": "You are given a document:\n{text}\nBased on its content, create three questions related to the following query: '{query}'. Answer in JSON according to the schema, where each question should receive a concise answer",
     "schema": {
-        "topic": {"type": "string"},
         "questions": {
             "type": "array",
             "properties": {
