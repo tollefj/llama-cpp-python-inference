@@ -1,5 +1,7 @@
 # llama-cpp-python-server
 
+a simple inference server for llama cpp python, based on prompt configurations and more. used for JSON structured output by default.
+
 ## installation
 
 first, download a suitable torch version for your system. Any >2 version should suffice.
@@ -23,6 +25,33 @@ any issues? run the equivalent command:
 
 ```bash
 python3 -m llama_cpp.server --model models/llm.gguf --n_gpu_layers=-1 --chat_format chatml
+```
+
+## usage
+
+```python
+from llm_config import prompt_configs
+from llm import generate
+
+# see `llm_config.py` for configurations
+config = prompt_configs["question_and_reason"]
+
+query = "this is a question about something related to the documents the LLM will receive"
+data = [
+    "doc 1: this is the first document",
+    "doc 2: this is the second document",
+    "doc 3: this is the third document",
+    "doc 4: this is the fourth document",
+]
+data = "\n".join(data)
+
+generate(
+    query=query,
+    text=data,
+    prompt=config["prompt"],
+    schema=config["schema"],
+    schema_type="object",  # array/object, ...
+)
 ```
 
 ## environment variables
