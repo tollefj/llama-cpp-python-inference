@@ -1,0 +1,10 @@
+python-dotenv
+nltk
+spacy
+PyYAML
+jsonlines
+transformers
+sentence-transformers
+chromadb
+pandas
+llama-cpp-python[server]
